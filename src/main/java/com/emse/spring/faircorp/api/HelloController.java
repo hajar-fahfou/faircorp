@@ -3,7 +3,7 @@ package com.emse.spring.faircorp.api;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
-@CrossOrigin
+@CrossOrigin(origins = "http://localhost:8080")
 @RestController
 @RequestMapping("/api/hello")
 @Transactional
