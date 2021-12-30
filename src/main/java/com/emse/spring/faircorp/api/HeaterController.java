@@ -10,7 +10,8 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.stream.Collectors;
 
-@CrossOrigin(origins = "http://localhost:8080")
+//@CrossOrigin(origins = "http://localhost:8081")
+@CrossOrigin(origins = "*", allowedHeaders = "*")
 @RestController
 @RequestMapping("/api/heaters")
 @Transactional
@@ -36,6 +37,7 @@ public class HeaterController {
 
     @DeleteMapping(path = "/{heater_id}")
     public void delete(@PathVariable Long heater_id) {
+
         heaterDao.deleteById(heater_id);
     }
 

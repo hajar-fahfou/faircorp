@@ -1,7 +1,9 @@
 package com.emse.spring.faircorp.api;
 
+import com.emse.spring.faircorp.DAO.HeaterDAO;
 import com.emse.spring.faircorp.DAO.RoomDAO;
 import com.emse.spring.faircorp.DAO.WindowDAO;
+import com.emse.spring.faircorp.model.Heater;
 import com.emse.spring.faircorp.model.Room;
 import com.emse.spring.faircorp.model.Window;
 import com.emse.spring.faircorp.model.WindowStatus;
@@ -11,7 +13,8 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.stream.Collectors;
 
-@CrossOrigin(origins = "http://localhost:8080")
+//@CrossOrigin(origins = "http://localhost:8081")
+@CrossOrigin(origins = "*", allowedHeaders = "*")
 @RestController
 @RequestMapping("/api/windows")
 @Transactional
@@ -19,10 +22,13 @@ public class WindowController {
 
     private final WindowDAO windowDao;
     private final RoomDAO roomDao;
+    HeaterDAO heaterDAO;
 
-    public WindowController(WindowDAO windowDao, RoomDAO roomDao) { // (4)
+    public WindowController(WindowDAO windowDao, RoomDAO roomDao, HeaterDAO heaterDAO) { // (4)
         this.windowDao = windowDao;
         this.roomDao = roomDao;
+        this.heaterDAO = heaterDAO;
+
     }
 
     @GetMapping // (5)
@@ -44,22 +50,27 @@ public class WindowController {
 
     @PostMapping // (8)
     public WindowDto create(@RequestBody WindowDto dto) {
-        // WindowDto must always contain the window room
         Room room = roomDao.getOne(dto.getRoomId());
         Window window = null;
-        // On creation id is not defined
         if (dto.getId() == null) {
             window = windowDao.save(new Window(room, dto.getName(), dto.getWindowStatus()));
         }
         else {
             window = windowDao.getOne(dto.getId());  // (9)
             window.setWindowStatus(dto.getWindowStatus());
+            window.setName(dto.getName());
         }
         return new WindowDto(window);
     }
 
     @DeleteMapping(path = "/{id}")
     public void delete(@PathVariable Long id) {
+        List<Heater> heaters = windowDao.findHeatersByWindowId(id);
+        if (heaters.size()>0) {
+            for (int i = 0; i < heaters.size(); i++) {
+                heaterDAO.deleteById(heaters.get(i).getId());
+            }
+        }
         windowDao.deleteById(id);
     }
 }
